@@ -11,6 +11,7 @@ fun main() {
             1. Add matrices
             2. Multiply matrix by a constant
             3. Multiply matrices
+            4. Transpose matrix
             0. Exit
         """.trimIndent()
         )
@@ -22,6 +23,7 @@ fun main() {
             1 -> addMatrices()
             2 -> multiplyMatrixByScalar()
             3 -> multiplyMatrices()
+            4 -> transposeMatrix()
             0 -> break
             else -> continue
         }
@@ -30,6 +32,42 @@ fun main() {
 
 fun readDoubleInputs() = readln().split(" ").map { it.toDouble() }
 fun readIntInputs() = readln().split(" ").map { it.toInt() }
+
+fun transposeMatrix() {
+    println(
+        """
+        1. Main diagonal
+        2. Side diagonal
+        3. Vertical line
+        4. Horizontal line
+    """.trimIndent()
+    )
+
+    println("Your choice:")
+    val k = readln().toInt()
+
+    println("Enter matrix size:")
+    val (n, m) = readIntInputs()
+
+    println("Enter matrix:")
+    val matrix = Array(n) { readDoubleInputs().toDoubleArray() }
+
+    val a = matrix[0].size
+    val b = matrix.size
+
+    val transpose = when (k) {
+
+        1 -> Array(matrix[0].size) { y -> DoubleArray(matrix.size) { x -> matrix[x][y] } }
+        2 -> Array(matrix[0].size) { y -> DoubleArray(matrix.size) { x -> matrix[b - 1 - x][a - 1 - y] } }
+        3 -> matrix.map { r -> r.reversedArray() }.toTypedArray()
+        4 -> matrix.reversedArray()
+        else -> return
+    }
+
+    println("The result is:")
+    printMatrix(transpose)
+}
+
 
 fun addMatrices() {
     println("Enter size of first matrix: ")
