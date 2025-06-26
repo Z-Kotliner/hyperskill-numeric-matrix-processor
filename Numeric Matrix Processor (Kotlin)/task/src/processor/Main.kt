@@ -12,6 +12,7 @@ fun main() {
             2. Multiply matrix by a constant
             3. Multiply matrices
             4. Transpose matrix
+            5. Calculate a determinant
             0. Exit
         """.trimIndent()
         )
@@ -24,6 +25,7 @@ fun main() {
             2 -> multiplyMatrixByScalar()
             3 -> multiplyMatrices()
             4 -> transposeMatrix()
+            5 -> calculateDeterminant()
             0 -> break
             else -> continue
         }
@@ -32,6 +34,22 @@ fun main() {
 
 fun readDoubleInputs() = readln().split(" ").map { it.toDouble() }
 fun readIntInputs() = readln().split(" ").map { it.toInt() }
+
+fun calculateDeterminant() {
+    println("Enter matrix size:")
+    val (n, m) = readIntInputs()
+
+    println("Enter matrix:")
+    val matrix = Array(n) { readDoubleInputs().toDoubleArray() }
+
+    if (!matrix.all { it.size == matrix.size }) {
+        println("Undefined determinant")
+        return
+    }
+
+    println("The result is:")
+    println(determinant(matrix))
+}
 
 fun transposeMatrix() {
     println(
@@ -149,6 +167,20 @@ fun matrixMultiplication(matrixA: Array<DoubleArray>, matrixB: Array<DoubleArray
             sum
         }
     }
+
+fun determinant(matrix: Array<DoubleArray>): Double {
+    return when (matrix.size) {
+        1 -> matrix[0][0]
+        2 -> matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+        else -> matrix[0].indices.sumOf { c ->
+            (if (c % 2 == 0) 1.0 else -1.0) * matrix[0][c] * determinant(minor(matrix, c))
+        }
+    }
+}
+
+fun minor(matrix: Array<DoubleArray>, col: Int): Array<DoubleArray> =
+    matrix.filterIndexed { x, _ -> x != 0 }.map { row -> row.filterIndexed { it, _ -> it != col }.toDoubleArray() }
+        .toTypedArray()
 
 
 fun printMatrix(matrix: Array<DoubleArray>) {
