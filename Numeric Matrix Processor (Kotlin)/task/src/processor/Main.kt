@@ -13,6 +13,7 @@ fun main() {
             3. Multiply matrices
             4. Transpose matrix
             5. Calculate a determinant
+            6. Inverse matrix
             0. Exit
         """.trimIndent()
         )
@@ -26,6 +27,7 @@ fun main() {
             3 -> multiplyMatrices()
             4 -> transposeMatrix()
             5 -> calculateDeterminant()
+            6 -> inverseMatrix()
             0 -> break
             else -> continue
         }
@@ -34,6 +36,36 @@ fun main() {
 
 fun readDoubleInputs() = readln().split(" ").map { it.toDouble() }
 fun readIntInputs() = readln().split(" ").map { it.toInt() }
+
+fun inverseMatrix() {
+    println("Enter matrix size:")
+    val (n, m) = readIntInputs()
+
+    println("Enter matrix:")
+    val matrix = Array(n) { readDoubleInputs().toDoubleArray() }
+
+    // verify
+    if (determinant(matrix) == 0.0 || !matrix.all { it.size == matrix.size }) {
+        println("This matrix doesn't have an inverse.")
+        return
+    }
+
+    val determinant = determinant(matrix)
+
+    val cofactorMatrix = Array(matrix.size) { i ->
+        DoubleArray(matrix.size) { j ->
+            (if ((i + j) % 2 == 0) 1.0 else -1.0) * determinant(minor(matrix, i, j))
+        }
+    }
+
+    val cofactorTranspose =
+        Array(cofactorMatrix[0].size) { y -> DoubleArray(cofactorMatrix.size) { x -> cofactorMatrix[x][y] } }
+
+    val inverse = matrixScalarProduct(cofactorTranspose, 1.0 / determinant)
+
+    println("The result is:")
+    printMatrix(inverse)
+}
 
 fun calculateDeterminant() {
     println("Enter matrix size:")
@@ -119,7 +151,7 @@ fun multiplyMatrixByScalar() {
     val matrix = Array(n) { readDoubleInputs().toDoubleArray() }
 
     println("Enter constant: ")
-    val c = readln().toInt()
+    val c = readln().toDouble()
 
     println("The result is:")
     printMatrix(matrixScalarProduct(matrix, c))
@@ -154,7 +186,7 @@ fun matrixSum(matrixA: Array<DoubleArray>, matrixB: Array<DoubleArray>): Array<D
     matrixA.zip(matrixB).map { pair -> pair.first.zip(pair.second).map { it.first + it.second }.toDoubleArray() }
         .toTypedArray()
 
-fun matrixScalarProduct(matrix: Array<DoubleArray>, c: Int): Array<DoubleArray> =
+fun matrixScalarProduct(matrix: Array<DoubleArray>, c: Double): Array<DoubleArray> =
     matrix.map { row -> row.map { it * c }.toDoubleArray() }.toTypedArray()
 
 fun matrixMultiplication(matrixA: Array<DoubleArray>, matrixB: Array<DoubleArray>): Array<DoubleArray> =
@@ -173,13 +205,13 @@ fun determinant(matrix: Array<DoubleArray>): Double {
         1 -> matrix[0][0]
         2 -> matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
         else -> matrix[0].indices.sumOf { c ->
-            (if (c % 2 == 0) 1.0 else -1.0) * matrix[0][c] * determinant(minor(matrix, c))
+            (if (c % 2 == 0) 1.0 else -1.0) * matrix[0][c] * determinant(minor(matrix, 0, c))
         }
     }
 }
 
-fun minor(matrix: Array<DoubleArray>, col: Int): Array<DoubleArray> =
-    matrix.filterIndexed { x, _ -> x != 0 }.map { row -> row.filterIndexed { it, _ -> it != col }.toDoubleArray() }
+fun minor(matrix: Array<DoubleArray>, row: Int, col: Int): Array<DoubleArray> =
+    matrix.filterIndexed { x, _ -> x != row }.map { it.filterIndexed { c, _ -> c != col }.toDoubleArray() }
         .toTypedArray()
 
 
