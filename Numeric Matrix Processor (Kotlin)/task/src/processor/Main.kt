@@ -37,12 +37,34 @@ fun main() {
 fun readDoubleInputs() = readln().split(" ").map { it.toDouble() }
 fun readIntInputs() = readln().split(" ").map { it.toInt() }
 
-fun inverseMatrix() {
+private fun readMatrix(): Array<DoubleArray> {
     println("Enter matrix size:")
     val (n, m) = readIntInputs()
 
     println("Enter matrix:")
     val matrix = Array(n) { readDoubleInputs().toDoubleArray() }
+    return matrix
+}
+
+private fun readTwoMatrices(): Pair<Array<DoubleArray>, Array<DoubleArray>> {
+    println("Enter size of first matrix: ")
+    val (n, m) = readIntInputs()
+
+    println("Enter first matrix:")
+    val matrixA = Array(n) { readDoubleInputs().toDoubleArray() }
+
+    println("Enter size of second matrix: ")
+    val (n1, m1) = readIntInputs()
+
+    println("Enter second matrix:")
+    val matrixB = Array(n1) { readDoubleInputs().toDoubleArray() }
+
+    return Pair(matrixA, matrixB)
+}
+
+
+fun inverseMatrix() {
+    val matrix = readMatrix()
 
     // verify
     if (determinant(matrix) == 0.0 || !matrix.all { it.size == matrix.size }) {
@@ -52,14 +74,9 @@ fun inverseMatrix() {
 
     val determinant = determinant(matrix)
 
-    val cofactorMatrix = Array(matrix.size) { i ->
-        DoubleArray(matrix.size) { j ->
-            (if ((i + j) % 2 == 0) 1.0 else -1.0) * determinant(minor(matrix, i, j))
-        }
-    }
+    val cofactorMatrix = cofactorOfMatrix(matrix)
 
-    val cofactorTranspose =
-        Array(cofactorMatrix[0].size) { y -> DoubleArray(cofactorMatrix.size) { x -> cofactorMatrix[x][y] } }
+    val cofactorTranspose = transposeByMainDiagonal(cofactorMatrix)
 
     val inverse = matrixScalarProduct(cofactorTranspose, 1.0 / determinant)
 
@@ -68,11 +85,7 @@ fun inverseMatrix() {
 }
 
 fun calculateDeterminant() {
-    println("Enter matrix size:")
-    val (n, m) = readIntInputs()
-
-    println("Enter matrix:")
-    val matrix = Array(n) { readDoubleInputs().toDoubleArray() }
+    val matrix = readMatrix()
 
     if (!matrix.all { it.size == matrix.size }) {
         println("Undefined determinant")
@@ -96,19 +109,14 @@ fun transposeMatrix() {
     println("Your choice:")
     val k = readln().toInt()
 
-    println("Enter matrix size:")
-    val (n, m) = readIntInputs()
-
-    println("Enter matrix:")
-    val matrix = Array(n) { readDoubleInputs().toDoubleArray() }
+    val matrix = readMatrix()
 
     val a = matrix[0].size
     val b = matrix.size
 
     val transpose = when (k) {
-
-        1 -> Array(matrix[0].size) { y -> DoubleArray(matrix.size) { x -> matrix[x][y] } }
-        2 -> Array(matrix[0].size) { y -> DoubleArray(matrix.size) { x -> matrix[b - 1 - x][a - 1 - y] } }
+        1 -> transposeByMainDiagonal(matrix)
+        2 -> transposeBySideDiagonal(matrix, b, a)
         3 -> matrix.map { r -> r.reversedArray() }.toTypedArray()
         4 -> matrix.reversedArray()
         else -> return
@@ -118,21 +126,10 @@ fun transposeMatrix() {
     printMatrix(transpose)
 }
 
-
 fun addMatrices() {
-    println("Enter size of first matrix: ")
-    val (n, m) = readIntInputs()
+    val (matrixA, matrixB) = readTwoMatrices()
 
-    println("Enter first matrix:")
-    val matrixA = Array(n) { readDoubleInputs().toDoubleArray() }
-
-    println("Enter size of second matrix: ")
-    val (n1, m1) = readIntInputs()
-
-    println("Enter second matrix:")
-    val matrixB = Array(n1) { readDoubleInputs().toDoubleArray() }
-
-    if (n1 != n || m1 != m) {
+    if (matrixA.size != matrixB.size || matrixA[0].size != matrixB[0].size) {
         println("The operation cannot be performed.")
         return
     }
@@ -144,11 +141,7 @@ fun addMatrices() {
 }
 
 fun multiplyMatrixByScalar() {
-    println("Enter size of first matrix: ")
-    val (n, m) = readIntInputs()
-
-    println("Enter matrix:")
-    val matrix = Array(n) { readDoubleInputs().toDoubleArray() }
+    val matrix = readMatrix()
 
     println("Enter constant: ")
     val c = readln().toDouble()
@@ -158,17 +151,7 @@ fun multiplyMatrixByScalar() {
 }
 
 fun multiplyMatrices() {
-    println("Enter size of first matrix: ")
-    val (n, m) = readIntInputs()
-
-    println("Enter first matrix:")
-    val matrixA = Array(n) { readDoubleInputs().toDoubleArray() }
-
-    println("Enter size of second matrix: ")
-    val (n1, m1) = readIntInputs()
-
-    println("Enter second matrix:")
-    val matrixB = Array(n1) { readDoubleInputs().toDoubleArray() }
+    val (matrixA, matrixB) = readTwoMatrices()
 
     // verify
     if (matrixA[0].size != matrixB.size) {
@@ -214,6 +197,19 @@ fun minor(matrix: Array<DoubleArray>, row: Int, col: Int): Array<DoubleArray> =
     matrix.filterIndexed { x, _ -> x != row }.map { it.filterIndexed { c, _ -> c != col }.toDoubleArray() }
         .toTypedArray()
 
+private fun cofactorOfMatrix(matrix: Array<DoubleArray>): Array<DoubleArray> {
+    return Array(matrix.size) { i ->
+        DoubleArray(matrix.size) { j ->
+            (if ((i + j) % 2 == 0) 1.0 else -1.0) * determinant(minor(matrix, i, j))
+        }
+    }
+}
+
+private fun transposeBySideDiagonal(matrix: Array<DoubleArray>, b: Int, a: Int): Array<DoubleArray> =
+    Array(matrix[0].size) { y -> DoubleArray(matrix.size) { x -> matrix[b - 1 - x][a - 1 - y] } }
+
+private fun transposeByMainDiagonal(matrix: Array<DoubleArray>): Array<DoubleArray> =
+    Array(matrix[0].size) { y -> DoubleArray(matrix.size) { x -> matrix[x][y] } }
 
 fun printMatrix(matrix: Array<DoubleArray>) {
     println()
